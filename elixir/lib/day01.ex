@@ -8,7 +8,7 @@ defmodule Day01 do
     {n, _} =
       depths
       |> Enum.reduce({0, nil}, fn
-        x, {count, prev} when x == nil or x > prev -> {count + 1, x}
+        x, {count, prev} when x > prev -> {count + 1, x}
         x, {count, _} -> {count, x}
       end)
 
