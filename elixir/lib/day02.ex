@@ -1,13 +1,14 @@
 defmodule Day02 do
   def read_input(file) do
     {:ok, file} = File.read(file)
-    file |>
-      String.trim() |>
-      String.split("\n") |>
-      Enum.map(fn x ->
-        [dir, n] = String.split(x, " ")
-        {dir, String.to_integer(n)}
-      end)
+
+    file
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map(fn x ->
+      [dir, n] = String.split(x, " ")
+      {dir, String.to_integer(n)}
+    end)
   end
 
   def move({direction, n}, {x, z}) do
