@@ -9,5 +9,7 @@ defmodule Day06Test do
     assert Day06.total_fish_after(input, 2) == 6
     assert Day06.total_fish_after(input, 10) == 12
     assert Day06.total_fish_after(input, 18) == 26
+    assert Day06.total_fish_after(input, 80) == 5934
+    assert Day06.total_fish_after(input, 256) == 26984457539
   end
 end
