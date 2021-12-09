@@ -23,8 +23,8 @@ defmodule Day08Test do
     {:ok, %{input: input}}
   end
 
-  test "count_easy_digits", %{input: input} do
-    assert Day08.count_easy_digits(input) == 26
+  test "count_easy_digits_in_output", %{input: input} do
+    assert Day08.count_easy_digits_in_output(input) == 26
   end
 
   test "compute_digits", %{input: input} do

@@ -1,6 +1,9 @@
 defmodule Day08 do
   def parse_line(line) do
-    [signal, output] = line |> String.split(" | ") |> Enum.map(fn x -> String.split(x, " ") end)
+    [signal, output] = line |> String.split(" | ")
+    # Turn the signal into sets of letters, leave the output as strings
+    signal = signal |> String.split(" ") |> Enum.map(fn y -> MapSet.new(String.graphemes(y)) end)
+    output = String.split(output, " ")
     {signal, output}
   end
 
@@ -13,127 +16,55 @@ defmodule Day08 do
     |> Enum.map(&parse_line/1)
   end
 
-  def n_easy_digits({_, output}) do
+  def n_easy_digits_in_output({_, output}) do
     easy_digit_counts = MapSet.new([2, 3, 4, 7])
     Enum.count(output, fn x ->
       MapSet.member?(easy_digit_counts, String.length(x))
     end)
   end
 
-  def count_easy_digits(input) do
+  def count_easy_digits_in_output(input) do
     input
-    |> Enum.map(&n_easy_digits/1)
+    |> Enum.map(&n_easy_digits_in_output/1)
     |> Enum.sum()
   end
 
-  def update_easy_candidates_single_entry(entry, candidates) do
-    # candidates is a map from letters a-f to a set of letters a-f
-    # in standard position that each letter could represent
-    chars = MapSet.new(String.graphemes(entry))
-    revision = case String.length(entry) do
-      2 ->
-        # must map to 1, which is on at c, f
-        Map.new(
-          ["a", "b", "c", "d", "e", "f", "g"],
-          fn ch ->
-            if MapSet.member?(chars, ch) do
-              {ch, MapSet.new(["c", "f"])}
-            else
-              {ch, MapSet.new(["a", "b", "d", "e", "g"])}
-            end
-          end
-        )
-      3 ->
-        # must map to 7, which is on at a, c, f
-        Map.new(
-          ["a", "b", "c", "d", "e", "f", "g"],
-          fn ch ->
-            if MapSet.member?(chars, ch) do
-              {ch, MapSet.new(["a", "c", "f"])}
-            else
-              {ch, MapSet.new(["b", "d", "e", "g"])}
-            end
-          end
-        )
-      4 ->
-        # must map to 4, which is on at b, c, d, f
-        Map.new(
-          ["a", "b", "c", "d", "e", "f", "g"],
-          fn ch ->
-            if MapSet.member?(chars, ch) do
-              {ch, MapSet.new(["b", "c", "d", "f"])}
-            else
-              {ch, MapSet.new(["a", "e", "g"])}
-            end
-          end
-        )
-      7 ->
-        # must map to 8, but this is unhelpful
-        candidates
-    end
-    candidates |> Map.merge(revision, fn _k, v1, v2 -> MapSet.intersection(v1, v2) end)
-  end
+  def determine_mappings(signal) do
+    # digits by segment count: 2 = {1}, 3 = {7}, 4 = {4}, 5 = {2,3,5}, 6 = {0,6,9}
+    signal_by_count = signal |> Enum.group_by(&MapSet.size/1)
 
-  def update_easy_candidates(entries, candidates) do
-    entries |>
-    Enum.filter(fn x -> not MapSet.member?(MapSet.new([5, 6]), String.length(x)) end) |>
-    Enum.reduce(candidates, &update_easy_candidates_single_entry/2)
-  end
-
-  def update_hard_candidates(entries, candidates) do
-    # 2, 3, 5
-    fivers = Enum.filter(entries, fn x -> String.length(x) == 5 end)
-      |> Enum.map(fn x -> MapSet.new(String.graphemes(x)) end)
-    # 0, 6, 9
-    sixers = Enum.filter(entries, fn x -> String.length(x) == 6 end)
-    |> Enum.map(fn x -> MapSet.new(String.graphemes(x)) end)
-
-    # a and g are used by all fivers and sixers
+    # a and g are used by all fivers and sixers, but:
+    #   a is used by the lone 3
+    #   g is the other one
     # b is used by one fiver (5) and all sixers
     # c is used by two fivers (2, 3) and two sixers (0, 9)
     # d is used by all fivers and two sixers (6, 9)
     # e is used by one fiver (2) and two sixers (0, 6)
     # f is used by two fivers (3, 5) and all sixers
-    revision = for ch <- ["a", "b", "c", "d", "e", "f", "g"], into: %{} do
-      in_fivers = Enum.count(fivers, fn x -> MapSet.member?(x, ch) end)
-      in_sixers = Enum.count(sixers, fn x -> MapSet.member?(x, ch) end)
+    for ch <- ["a", "b", "c", "d", "e", "f", "g"], into: %{} do
+      in_fivers = Enum.count(signal_by_count[5], fn x -> MapSet.member?(x, ch) end)
+      in_sixers = Enum.count(signal_by_count[6], fn x -> MapSet.member?(x, ch) end)
       ch_candidates = cond do
         in_fivers == 3 and in_sixers == 3 ->
-          MapSet.new(["a", "g"])
+          in_threers = Enum.count(signal_by_count[3], fn x -> MapSet.member?(x, ch) end)
+          if in_threers == 1 do
+            "a"
+          else
+            "g"
+          end
         in_fivers == 1 and in_sixers == 3 ->
-          MapSet.new(["b"])
+          "b"
         in_fivers == 2 and in_sixers == 2 ->
-          MapSet.new(["c"])
+          "c"
         in_fivers == 3 and in_sixers == 2 ->
-          MapSet.new(["d"])
+          "d"
         in_fivers == 1 and in_sixers == 2 ->
-          MapSet.new(["e"])
+          "e"
         in_fivers == 2 and in_sixers == 3 ->
-          MapSet.new(["f"])
+          "f"
       end
       {ch, ch_candidates}
     end
-    candidates |> Map.merge(revision, fn _k, v1, v2 -> MapSet.intersection(v1, v2) end)
-  end
-
-  def create_segment_mapping(candidates) do
-    mapping = for ch <- ["a", "b", "c", "d", "e", "f", "g"], into: %{} do
-      [x] = MapSet.to_list(candidates[ch])
-      {ch, x}
-    end
-    if MapSet.new(Map.values(mapping)) != MapSet.new(["a", "b", "c", "d", "e", "f", "g"]) do
-      raise "Non-unique mapping found"
-    end
-    mapping
-  end
-
-  def determine_mappings(signal) do
-    candidates = Map.new(["a", "b", "c", "d", "e", "f", "g"], fn char ->
-      {char, MapSet.new(["a", "b", "c", "d", "e", "f", "g"])}
-    end)
-    candidates = update_easy_candidates(signal, candidates)
-    candidates = update_hard_candidates(signal, candidates)
-    create_segment_mapping(candidates)
   end
 
   def determine_output(mapping, output) do
