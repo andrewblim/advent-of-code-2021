@@ -18,6 +18,7 @@ defmodule Day08 do
 
   def n_easy_digits_in_output({_, output}) do
     easy_digit_counts = MapSet.new([2, 3, 4, 7])
+
     Enum.count(output, fn x ->
       MapSet.member?(easy_digit_counts, String.length(x))
     end)
@@ -44,35 +45,46 @@ defmodule Day08 do
     for ch <- ["a", "b", "c", "d", "e", "f", "g"], into: %{} do
       in_fivers = Enum.count(signal_by_count[5], fn x -> MapSet.member?(x, ch) end)
       in_sixers = Enum.count(signal_by_count[6], fn x -> MapSet.member?(x, ch) end)
-      ch_candidates = cond do
-        in_fivers == 3 and in_sixers == 3 ->
-          in_threers = Enum.count(signal_by_count[3], fn x -> MapSet.member?(x, ch) end)
-          if in_threers == 1 do
-            "a"
-          else
-            "g"
-          end
-        in_fivers == 1 and in_sixers == 3 ->
-          "b"
-        in_fivers == 2 and in_sixers == 2 ->
-          "c"
-        in_fivers == 3 and in_sixers == 2 ->
-          "d"
-        in_fivers == 1 and in_sixers == 2 ->
-          "e"
-        in_fivers == 2 and in_sixers == 3 ->
-          "f"
-      end
+
+      ch_candidates =
+        cond do
+          in_fivers == 3 and in_sixers == 3 ->
+            in_threers = Enum.count(signal_by_count[3], fn x -> MapSet.member?(x, ch) end)
+
+            if in_threers == 1 do
+              "a"
+            else
+              "g"
+            end
+
+          in_fivers == 1 and in_sixers == 3 ->
+            "b"
+
+          in_fivers == 2 and in_sixers == 2 ->
+            "c"
+
+          in_fivers == 3 and in_sixers == 2 ->
+            "d"
+
+          in_fivers == 1 and in_sixers == 2 ->
+            "e"
+
+          in_fivers == 2 and in_sixers == 3 ->
+            "f"
+        end
+
       {ch, ch_candidates}
     end
   end
 
   def determine_output(mapping, output) do
-    remapped_output = output
-    |> String.graphemes()
-    |> Enum.map(fn ch -> mapping[ch] end)
-    |> Enum.sort()
-    |> Enum.join("")
+    remapped_output =
+      output
+      |> String.graphemes()
+      |> Enum.map(fn ch -> mapping[ch] end)
+      |> Enum.sort()
+      |> Enum.join("")
+
     case remapped_output do
       "abcefg" -> 0
       "cf" -> 1
@@ -92,7 +104,12 @@ defmodule Day08 do
     for {signal, output} <- input do
       mapping = determine_mappings(signal)
       digits = Enum.map(output, fn x -> determine_output(mapping, x) end)
-      digits |> Enum.reverse() |> Enum.with_index() |> Enum.map(fn {x, i} -> x * Integer.pow(10, i) end) |> Enum.sum()
+
+      digits
+      |> Enum.reverse()
+      |> Enum.with_index()
+      |> Enum.map(fn {x, i} -> x * Integer.pow(10, i) end)
+      |> Enum.sum()
     end
   end
 end

@@ -16,10 +16,12 @@ defmodule Day08Test do
     gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     """
 
-    input = input_str
-    |> String.trim()
-    |> String.split("\n")
-    |> Enum.map(&Day08.parse_line/1)
+    input =
+      input_str
+      |> String.trim()
+      |> String.split("\n")
+      |> Enum.map(&Day08.parse_line/1)
+
     {:ok, %{input: input}}
   end
 
@@ -29,7 +31,16 @@ defmodule Day08Test do
 
   test "compute_digits", %{input: input} do
     assert Day08.compute_digits(input) == [
-      8394, 9781, 1197, 9361, 4873, 8418, 4548, 1625, 8717, 4315
-    ]
+             8394,
+             9781,
+             1197,
+             9361,
+             4873,
+             8418,
+             4548,
+             1625,
+             8717,
+             4315
+           ]
   end
 end

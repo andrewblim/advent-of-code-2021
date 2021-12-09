@@ -26,10 +26,12 @@ defmodule Day07 do
   def fuel_required2(input, guess, cur_penalty) do
     penalty_up = input |> Enum.map(fn x -> penalty(x, guess + 1) end) |> Enum.sum()
     penalty_dn = input |> Enum.map(fn x -> penalty(x, guess - 1) end) |> Enum.sum()
+
     cond do
       penalty_up < cur_penalty -> fuel_required2(input, guess + 1, penalty_up)
       penalty_dn < cur_penalty -> fuel_required2(input, guess + 1, penalty_dn)
-      true -> {guess, round(cur_penalty / 2)}  # since we want n(n+1)/2
+      # since we want n(n+1)/2
+      true -> {guess, round(cur_penalty / 2)}
     end
   end
 
