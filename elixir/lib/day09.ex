@@ -36,26 +36,13 @@ defmodule Day09 do
   end
 
   def basin(heightmap, {x, y}, cur_basin) do
-    cur_basin = MapSet.put(cur_basin, {x, y})
-
-    neighbors =
-      Enum.filter(
-        [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}],
-        fn n -> heightmap[n] != 9 and heightmap[n] != nil and not MapSet.member?(cur_basin, n) end
-      )
-
-    Enum.reduce(neighbors, cur_basin, fn n, acc ->
-      MapSet.union(basin(heightmap, n, acc), acc)
-    end)
-
-    # for n <- neighbors,
-    #     heightmap[n] != 9,
-    #     heightmap[n] != nil,
-    #     not MapSet.member?(cur_basin, n) do
-    #   cur_basin = MapSet.put(cur_basin, n)
-    #   basin(heightmap, n, cur_basin)
-    # end
-    # cur_basin
+    for n <- [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}],
+        heightmap[n] != 9,
+        heightmap[n] != nil,
+        not MapSet.member?(cur_basin, n),
+        reduce: MapSet.put(cur_basin, {x, y}) do
+      acc -> MapSet.union(acc, basin(heightmap, n, acc))
+    end
   end
 
   def basin(heightmap, {x, y}) do
