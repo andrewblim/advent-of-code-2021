@@ -27,11 +27,11 @@ defmodule Day12 do
   def ways_from(map, x, visited) do
     case x do
       "end" ->
-        [visited]
+        1
 
       _ ->
-        for n <- map[x], is_big?(n) or not Enum.member?(visited, n), reduce: [] do
-          acc -> acc ++ ways_from(map, n, [n | visited])
+        for n <- map[x], is_big?(n) or not Enum.member?(visited, n), reduce: 0 do
+          acc -> acc + ways_from(map, n, [n | visited])
         end
     end
   end
@@ -48,7 +48,7 @@ defmodule Day12 do
   def ways_from2(map, x, visited) do
     case x do
       "end" ->
-        [visited]
+        1
 
       _ ->
         small_eligible = not visited_small_cave_twice?(visited)
@@ -56,8 +56,8 @@ defmodule Day12 do
         for n <- map[x],
             n != "start",
             is_big?(n) or small_eligible or not Enum.member?(visited, n),
-            reduce: [] do
-          acc -> acc ++ ways_from2(map, n, [n | visited])
+            reduce: 0 do
+          acc -> acc + ways_from2(map, n, [n | visited])
         end
     end
   end
