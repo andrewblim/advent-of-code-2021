@@ -12,19 +12,21 @@ defmodule Day22 do
   end
 
   def parse_line(line) do
-    [_, on_off, x1, x2, y1, y2, z1, z2] = Regex.run(
-      ~r/^(on|off) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)$/,
-      line
-    )
+    [_, on_off, x1, x2, y1, y2, z1, z2] =
+      Regex.run(
+        ~r/^(on|off) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)$/,
+        line
+      )
+
     {
-      (if on_off == "on", do: :on, else: :off),
+      if(on_off == "on", do: :on, else: :off),
       {
         String.to_integer(x1),
         String.to_integer(x2),
         String.to_integer(y1),
         String.to_integer(y2),
         String.to_integer(z1),
-        String.to_integer(z2),
+        String.to_integer(z2)
       }
     }
   end
@@ -38,22 +40,27 @@ defmodule Day22 do
     x = intersect_linear({ax1, ax2}, {bx1, bx2})
     y = intersect_linear({ay1, ay2}, {by1, by2})
     z = intersect_linear({az1, az2}, {bz1, bz2})
+
     case {x, y, z} do
       {{x1, x2}, {y1, y2}, {z1, z2}} ->
         {x1, x2, y1, y2, z1, z2}
+
       _ ->
         nil
-      end
+    end
   end
 
   def intersect_linear({ax1, ax2}, {bx1, bx2}) do
     cond do
       ax1 < bx1 and ax2 < bx1 ->
         nil
+
       ax1 < bx1 ->
         {bx1, min(ax2, bx2)}
+
       ax1 <= bx2 ->
         {ax1, min(ax2, bx2)}
+
       true ->
         nil
     end
@@ -61,11 +68,14 @@ defmodule Day22 do
 
   def add_step({on_off, cube}, memo \\ []) do
     init_update = if on_off == :on, do: [{1, cube}], else: []
-    update = for {count, memo_cube} <- memo,
-                 isect_cube = intersect_cubic(memo_cube, cube),
-                 isect_cube != nil do
-      {-count, isect_cube}
-    end
+
+    update =
+      for {count, memo_cube} <- memo,
+          isect_cube = intersect_cubic(memo_cube, cube),
+          isect_cube != nil do
+        {-count, isect_cube}
+      end
+
     init_update ++ update ++ memo
   end
 
@@ -77,15 +87,18 @@ defmodule Day22 do
 
   def count_lit(steps, filter \\ nil) do
     memo = add_steps(steps)
-    memo = if filter != nil do
-      for {count, cube} <- memo,
-          isect_cube = intersect_cubic(cube, filter),
-          isect_cube != nil do
-        {count, isect_cube}
+
+    memo =
+      if filter != nil do
+        for {count, cube} <- memo,
+            isect_cube = intersect_cubic(cube, filter),
+            isect_cube != nil do
+          {count, isect_cube}
+        end
+      else
+        memo
       end
-    else
-      memo
-    end
+
     for {count, cube} <- memo, reduce: 0 do
       acc -> acc + count * volume(cube)
     end
